@@ -1,36 +1,28 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FileText, Download, FileDown } from "lucide-react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 interface DownloadItem {
+  id: string;
   name: string;
   description: string;
-  icon: React.ReactNode;
-  link: string;
+  url: string;
 }
 
-const downloadItems: DownloadItem[] = [
-  {
-    name: "CSA Constitution",
-    description: "Read about the organization's structure, rules, and governance",
-    icon: <FileText className="h-12 w-12 text-csa-orange" />,
-    link: "#" // placeholder link
-  },
-  {
-    name: "Membership Form",
-    description: "Fill this form to join CSA or renew your membership",
-    icon: <FileText className="h-12 w-12 text-csa-orange" />,
-    link: "#" // placeholder link
-  },
-  {
-    name: "Registered Members",
-    description: "View the list of registered CSA members",
-    icon: <FileText className="h-12 w-12 text-csa-orange" />,
-    link: "https://docs.google.com/spreadsheets/d/1uv-bzwCwdYdiQJrbUWHcXRaitku8E3oEmXGt2FwUvZs/edit?gid=963869128#gid=963869128"
-  }
-];
-
 const DownloadsSection = () => {
+  const [documents, setDocuments] = useState<DownloadItem[]>([]);
+
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      const snapshot = await getDocs(collection(db, "documents"));
+      const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as DownloadItem));
+      console.log("Fetched documents:", docs);
+      setDocuments(docs);
+    };
+    fetchDocuments();
+  }, []);
   return (
     <section id="downloads" className="py-16 md:py-24 bg-white">
       <div className="csa-container">
@@ -44,17 +36,16 @@ const DownloadsSection = () => {
         </div>
         
         <div className="grid md:grid-cols-3 gap-8">
-          {downloadItems.map((item, index) => (
+          {documents.map((item, index) => (
             <div 
-              key={index} 
-              className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center animate-on-scroll"
-              style={{ animationDelay: `${0.5 + index * 0.2}s` }}
+              key={item.id} 
+              className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center"
             >
-              <div className="mb-4">{item.icon}</div>
+              <div className="mb-4"><FileText className="h-12 w-12 text-csa-orange" /></div>
               <h3 className="text-xl font-semibold text-csa-navy mb-2">{item.name}</h3>
               <p className="text-csa-gray mb-6">{item.description}</p>
               <a 
-                href={item.link} 
+                href={item.url} 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-auto bg-csa-navy text-white px-6 py-3 rounded-md font-medium transition-all duration-300 inline-flex items-center group hover:bg-csa-orange transform hover:scale-105 shadow-md hover:shadow-lg"

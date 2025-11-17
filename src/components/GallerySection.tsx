@@ -1,24 +1,34 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
-// Placeholder gallery images
-const galleryImages = [
-  { src: "/placeholder.svg", alt: "CSA Event", category: "Events" },
-  { src: "/placeholder.svg", alt: "Site Visit", category: "Site Visits" },
-  { src: "/placeholder.svg", alt: "Team Building", category: "Events" },
-  { src: "/placeholder.svg", alt: "Field Trip", category: "Site Visits" },
-];
+interface GalleryImage {
+  id: string;
+  url: string;
+  alt: string;
+  category: string;
+}
 
 const GallerySection = () => {
-  const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
+  const [images, setImages] = useState<GalleryImage[]>([]);
+  const [selectedImage, setSelectedImage] = useState<{ url: string; alt: string } | null>(null);
   const [filter, setFilter] = useState("All");
 
-  const categories = ["All", "Events", "Site Visits"];
+  useEffect(() => {
+    const fetchImages = async () => {
+      const snapshot = await getDocs(collection(db, "gallery"));
+      setImages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GalleryImage)));
+    };
+    fetchImages();
+  }, []);
+
+  const categories = ["All", ...Array.from(new Set(images.map(img => img.category)))];
   
   const filteredImages = filter === "All" 
-    ? galleryImages 
-    : galleryImages.filter(img => img.category === filter);
+    ? images 
+    : images.filter(img => img.category === filter);
 
   return (
     <section id="gallery" className="py-16 md:py-24 bg-csa-navy/10">
@@ -58,9 +68,9 @@ const GallerySection = () => {
               style={{ animationDelay: `${0.6 + 0.1 * index}s` }}
               onClick={() => setSelectedImage(image)}
             >
-              <div className="w-full h-full overflow-hidden group">
+              <div className="w-full h-full overflow-hidden group relative">
                 <img 
-                  src={image.src} 
+                  src={image.url} 
                   alt={image.alt} 
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                 />
@@ -83,7 +93,7 @@ const GallerySection = () => {
                 <X className="h-6 w-6 text-white" />
               </button>
               <img 
-                src={selectedImage.src} 
+                src={selectedImage.url} 
                 alt={selectedImage.alt} 
                 className="w-full h-auto max-h-[80vh] object-contain" 
               />

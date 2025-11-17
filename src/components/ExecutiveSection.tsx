@@ -1,30 +1,18 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Linkedin, User, History } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 interface ExecutiveMember {
   name: string;
   role: string;
   linkedIn?: string;
   tier: number;
+  year: string;
+  imageUrl?: string;
 }
-
-const executives: ExecutiveMember[] = [
-  { name: "Kevin Kariuki Wamaitha", role: "President", linkedIn: "https://www.linkedin.com/in/kevin-kariuki-wamaitha/", tier: 1 },
-  { name: "Hope Mang'eni", role: "Vice President", tier: 2 },
-  { name: "Trizah Wanjiku", role: "Administrative Secretary", linkedIn: "https://www.linkedin.com/in/trizah-wanjiku-7779b3266/", tier: 2 },
-  { name: "Victor Mutemi", role: "Treasurer", linkedIn: "https://www.linkedin.com/in/victor-mutemi-4720b5287/", tier: 3 },
-  { name: "Wendy Matara", role: "Organizing Secretary", linkedIn: "https://www.linkedin.com/in/wendy-matara-5a1873293/", tier: 3 },
-  { name: "Anakala Michael", role: "Registrar", linkedIn: "https://www.linkedin.com/in/anakala-michael-0b87a2276/", tier: 3 },
-  { name: "Collins Kaiyaa", role: "Chief Editor", linkedIn: "https://www.linkedin.com/in/collins-kaiyaa-9a61902a0/", tier: 4 },
-  { name: "Meshack Were", role: "QS Chapter Representative", linkedIn: "https://www.linkedin.com/in/meshack-were-105aba282/", tier: 4 },
-  { name: "Grivance Otieno", role: "CM Chapter Representative", tier: 4 },
-  { name: "Hepziphah Chebet", role: "BCT Chapter Representative", tier: 4 },
-  { name: "Laban Kiarii", role: "Real Estate Chapter Representative", tier: 4 },
-  { name: "QS Choka", role: "Patron", tier: 5 },
-  { name: "Madam Pauline", role: "Assistant Patron", tier: 5 },
-];
 
 // Define tier colors with CSA logo colors
 const tierColors = {
@@ -36,11 +24,27 @@ const tierColors = {
 };
 
 const ExecutiveSection = () => {
-  // Placeholder for future navigation to former councils page
   const [showFormDialog, setShowFormDialog] = useState(false);
+  const [executives, setExecutives] = useState<ExecutiveMember[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchExecutives = async () => {
+      try {
+        const q = query(collection(db, "executives"), where("year", "==", "2024/2025"));
+        const querySnapshot = await getDocs(q);
+        const execs = querySnapshot.docs.map(doc => doc.data() as ExecutiveMember);
+        setExecutives(execs.sort((a, b) => a.tier - b.tier));
+      } catch (error) {
+        console.error("Error fetching executives:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchExecutives();
+  }, []);
   
-  // Group executives by tier
   const tierGroups: Record<number, ExecutiveMember[]> = {};
   
   executives.forEach(exec => {
@@ -49,6 +53,16 @@ const ExecutiveSection = () => {
     }
     tierGroups[exec.tier].push(exec);
   });
+
+  if (loading) {
+    return (
+      <section id="executive" className="py-16 md:py-24 bg-white">
+        <div className="csa-container text-center">
+          <p>Loading executive council...</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="executive" className="py-16 md:py-24 bg-white">
@@ -83,7 +97,11 @@ const ExecutiveSection = () => {
                   style={{ animationDelay: "0.5s" }}
                 >
                   <div className="w-36 h-36 bg-gray-200 rounded-full mb-4 overflow-hidden flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                    <User className="h-20 w-20 text-gray-400" />
+                    {exec.imageUrl ? (
+                      <img src={exec.imageUrl} alt={exec.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="h-20 w-20 text-gray-400" />
+                    )}
                   </div>
                   <h3 className="text-2xl font-semibold text-white">
                     {exec.linkedIn ? (
@@ -114,7 +132,11 @@ const ExecutiveSection = () => {
                   style={{ animationDelay: `${0.6 + 0.1 * index}s` }}
                 >
                   <div className="w-32 h-32 bg-gray-200 rounded-full mb-4 overflow-hidden flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                    <User className="h-16 w-16 text-gray-400" />
+                    {exec.imageUrl ? (
+                      <img src={exec.imageUrl} alt={exec.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="h-16 w-16 text-gray-400" />
+                    )}
                   </div>
                   <h3 className="text-xl font-semibold text-white">
                     {exec.linkedIn ? (
@@ -145,7 +167,11 @@ const ExecutiveSection = () => {
                   style={{ animationDelay: `${0.8 + 0.1 * index}s` }}
                 >
                   <div className="w-28 h-28 bg-gray-200 rounded-full mb-4 overflow-hidden flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                    <User className="h-14 w-14 text-gray-400" />
+                    {exec.imageUrl ? (
+                      <img src={exec.imageUrl} alt={exec.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="h-14 w-14 text-gray-400" />
+                    )}
                   </div>
                   <h3 className="text-lg font-semibold text-white">
                     {exec.linkedIn ? (
@@ -176,7 +202,11 @@ const ExecutiveSection = () => {
                   style={{ animationDelay: `${1.1 + 0.1 * index}s` }}
                 >
                   <div className="w-24 h-24 bg-gray-200 rounded-full mb-3 overflow-hidden flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                    <User className="h-12 w-12 text-gray-400" />
+                    {exec.imageUrl ? (
+                      <img src={exec.imageUrl} alt={exec.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="h-12 w-12 text-gray-400" />
+                    )}
                   </div>
                   <h3 className="text-base font-semibold text-white">
                     {exec.linkedIn ? (
@@ -208,7 +238,11 @@ const ExecutiveSection = () => {
                   style={{ animationDelay: `${1.6 + 0.1 * index}s` }}
                 >
                   <div className="w-20 h-20 bg-gray-200 rounded-full mb-3 overflow-hidden flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                    <User className="h-10 w-10 text-gray-400" />
+                    {exec.imageUrl ? (
+                      <img src={exec.imageUrl} alt={exec.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="h-10 w-10 text-gray-400" />
+                    )}
                   </div>
                   <h3 className="text-base font-semibold text-white">{exec.name}</h3>
                   <div className="absolute inset-0 bg-gradient-to-t from-csa-navy/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">

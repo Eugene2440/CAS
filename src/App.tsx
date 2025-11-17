@@ -17,6 +17,12 @@ import ProfessionalRegPage from "./pages/ProfessionalRegPage";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminMembers from "./pages/AdminMembers";
+import AdminExecutive from "./pages/AdminExecutive";
+import AdminChapters from "./pages/AdminChapters";
+import AdminDownloads from "./pages/AdminDownloads";
+import AdminGallery from "./pages/AdminGallery";
+import AdminImportMembers from "./pages/AdminImportMembers";
+import CreateAdmin from "./pages/CreateAdmin";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +45,12 @@ const App = () => (
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/members" element={<AdminMembers />} />
+          <Route path="/admin/executive" element={<AdminExecutive />} />
+          <Route path="/admin/chapters" element={<AdminChapters />} />
+          <Route path="/admin/downloads" element={<AdminDownloads />} />
+          <Route path="/admin/gallery" element={<AdminGallery />} />
+          <Route path="/admin/import-members" element={<AdminImportMembers />} />
+          <Route path="/create-admin" element={<CreateAdmin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

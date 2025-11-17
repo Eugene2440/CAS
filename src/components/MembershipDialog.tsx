@@ -15,6 +15,7 @@ interface MembershipDialogProps {
 }
 
 const MembershipDialog = ({ open, onOpenChange }: MembershipDialogProps) => {
+  const [step, setStep] = useState(1);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [yearOfStudy, setYearOfStudy] = useState("");
@@ -24,10 +25,15 @@ const MembershipDialog = ({ open, onOpenChange }: MembershipDialogProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
-  const isFormValid = fullName && email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/) && yearOfStudy && course && (isTukStudent ? mpesaNumber.match(/^07\d{8}$/) : true);
+  const isStep1Valid = fullName && email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/) && yearOfStudy;
+  const isStep2Valid = course && (isTukStudent ? mpesaNumber.match(/^07\d{8}$/) : true);
+
+  const handleNext = () => {
+    if (isStep1Valid) setStep(2);
+  };
 
   const handleProceedToPayment = async () => {
-    if (!isFormValid) return;
+    if (!isStep2Valid) return;
 
     if (!isTukStudent) {
       toast({
@@ -74,6 +80,7 @@ const MembershipDialog = ({ open, onOpenChange }: MembershipDialogProps) => {
           setIsProcessing(false);
           onOpenChange(false);
           // Reset form
+          setStep(1);
           setFullName("");
           setEmail("");
           setYearOfStudy("");
@@ -104,11 +111,12 @@ const MembershipDialog = ({ open, onOpenChange }: MembershipDialogProps) => {
       <DialogContent className="sm:max-w-[500px] bg-white border-2 border-csa-orange">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-csa-navy text-center">
-            Join the Construction Students Association (CSA-TUK)
+            Join CSA-TUK - Step {step} of 2
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          {step === 1 && (<>
           {/* Full Name */}
           <div className="space-y-2">
             <Label htmlFor="fullName" className="text-csa-navy font-medium">
@@ -156,6 +164,9 @@ const MembershipDialog = ({ open, onOpenChange }: MembershipDialogProps) => {
               </SelectContent>
             </Select>
           </div>
+          </> )}
+
+          {step === 2 && (<>
 
           {/* Course */}
           <div className="space-y-2">
@@ -224,33 +235,55 @@ const MembershipDialog = ({ open, onOpenChange }: MembershipDialogProps) => {
               </p>
             </div>
           )}
+          </> )}
         </div>
 
         {/* Action Buttons */}
         <div className="space-y-3">
           <div className="flex gap-3">
-            <Button
-              onClick={handleProceedToPayment}
-              disabled={!isFormValid || isProcessing}
-              className="flex-1 bg-csa-orange hover:bg-csa-orange/90 text-white"
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                "Proceed to Payment"
-              )}
-            </Button>
-            <Button
-              onClick={() => onOpenChange(false)}
-              variant="outline"
-              className="flex-1 border-csa-navy text-csa-navy hover:bg-csa-navy/10"
-              disabled={isProcessing}
-            >
-              Cancel
-            </Button>
+            {step === 1 ? (
+              <>
+                <Button
+                  onClick={handleNext}
+                  disabled={!isStep1Valid}
+                  className="flex-1 bg-csa-orange hover:bg-csa-orange/90 text-white"
+                >
+                  Next
+                </Button>
+                <Button
+                  onClick={() => onOpenChange(false)}
+                  variant="outline"
+                  className="flex-1 border-csa-navy text-csa-navy hover:bg-csa-navy/10"
+                >
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={() => setStep(1)}
+                  variant="outline"
+                  className="flex-1 border-csa-navy text-csa-navy hover:bg-csa-navy/10"
+                  disabled={isProcessing}
+                >
+                  Back
+                </Button>
+                <Button
+                  onClick={handleProceedToPayment}
+                  disabled={!isStep2Valid || isProcessing}
+                  className="flex-1 bg-csa-orange hover:bg-csa-orange/90 text-white"
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    "Proceed to Payment"
+                  )}
+                </Button>
+              </>
+            )}
           </div>
           
           {/* Privacy Note */}
